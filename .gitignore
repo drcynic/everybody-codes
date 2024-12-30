@@ -1,0 +1,9 @@
+input*b.txt
+.idea/
+target/
+everybody_codes_e2024_q*_p1.txt
+!everybody_codes_e2024_q*_p1a.txt
+everybody_codes_e2024_q*_p2.txt
+!everybody_codes_e2024_q*_p2a.txt
+everybody_codes_e2024_q*_p3.txt
+!everybody_codes_e2024_q*_p3a.txt

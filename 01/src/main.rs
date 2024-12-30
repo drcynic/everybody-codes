@@ -4,15 +4,15 @@ use std::iter::*;
 //use itertools::{Either, Itertools};
 
 fn main() {
-    let input = std::fs::read_to_string("input1b.txt").unwrap();
+    let input = std::fs::read_to_string("everybody_codes_e2024_q01_p1.txt").unwrap();
     let p1: i32 = eval(&input, 1);
     println!("Part1: {}", p1);
 
-    let input = std::fs::read_to_string("input2b.txt").unwrap();
+    let input = std::fs::read_to_string("everybody_codes_e2024_q01_p2.txt").unwrap();
     let p2: i32 = eval(&input, 2);
     println!("Part2: {:?}", p2);
 
-    let input = std::fs::read_to_string("input3b.txt").unwrap();
+    let input = std::fs::read_to_string("everybody_codes_e2024_q01_p3.txt").unwrap();
     let p3: i32 = eval(&input, 3);
     println!("Part3: {:?}", p3);
 }
