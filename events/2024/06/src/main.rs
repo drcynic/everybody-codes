@@ -1,89 +1,70 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    iter::*,
-};
+use std::collections::{HashMap, VecDeque};
+
+use itertools::Itertools;
 
 fn main() {
-    let mut cols_by_idx = read_input("everybody_codes_e2024_q05_p1.txt");
-    let mut n = 0;
-    for r in 0..10 {
-        n = calc_round(&mut cols_by_idx, r);
-    }
-    println!("part1: {}", n);
-
-    let mut cols_by_idx = read_input("everybody_codes_e2024_q05_p2.txt");
-    let mut num_counts: HashMap<usize, usize> = HashMap::new();
-    let mut r = 0;
-    loop {
-        n = calc_round(&mut cols_by_idx, r);
-        num_counts.entry(n).and_modify(|count| *count += 1).or_insert(1);
-
-        if num_counts.get(&n).unwrap() == &2024 {
-            println!("part2: {}", (r + 1) * n);
-            break;
-        }
-        r += 1;
-    }
-
-    let mut cols_by_idx = read_input("everybody_codes_e2024_q05_p3.txt");
-    let mut max_num = 0usize;
-    for r in 0..1000000 {
-        n = calc_round(&mut cols_by_idx, r);
-        if n > max_num {
-            max_num = n;
-        }
-    }
-    println!("Part3: {max_num}");
-}
-
-fn read_input(filename: &str) -> Vec<VecDeque<usize>> {
-    let input = std::fs::read_to_string(filename).unwrap();
-    let grid: Vec<Vec<usize>> = input
-        .trim()
-        .lines()
-        .map(|line| line.split_whitespace().map(|num| num.parse::<usize>().unwrap()).collect())
-        .collect();
-    let mut cols_by_idx = vec![VecDeque::new(); grid[0].len()];
-    for row in &grid {
-        for (col, &num) in row.iter().enumerate() {
-            cols_by_idx[col].push_back(num);
-        }
-    }
-    cols_by_idx
-}
-
-fn calc_round(grid: &mut Vec<VecDeque<usize>>, round: usize) -> usize {
-    let clapper_col_idx = round % grid.len();
-    let clapper = grid[clapper_col_idx].pop_front().unwrap();
-    let dance_col_idx = (round + 1) % grid.len();
-    let dance_col = &mut grid[dance_col_idx];
-    let l = dance_col.len();
-    let col_rounds = (clapper - 1) / l;
-    let col_pos = (clapper - 1) % l;
-    if col_rounds % 2 == 0 {
-        dance_col.insert(col_pos, clapper);
-    } else {
-        dance_col.insert(l - col_pos, clapper);
-    }
-
-    // combine as string and then parse back to usize
-    grid.iter()
-        .fold("".to_string(), |a, col| a + &col[0].to_string())
-        .parse::<usize>()
+    let input = std::fs::read_to_string("everybody_codes_e2024_q06_p1a.txt").unwrap();
+    let paths_by_length = parse_input(input);
+    let r1 = paths_by_length
+        .values()
+        .find(|v| v.len() == 1)
         .unwrap()
+        .first()
+        .unwrap()
+        .iter()
+        .join("");
+    println!("Part1: {:?}", r1);
+
+    let input = std::fs::read_to_string("everybody_codes_e2024_q06_p2.txt").unwrap();
+    let paths_by_length = parse_input(input);
+    let r2 = first_letter_path(paths_by_length);
+    println!("Part2: {:?}", r2);
+
+    let input = std::fs::read_to_string("everybody_codes_e2024_q06_p3.txt").unwrap();
+    let paths_by_length = parse_input(input);
+    let r3 = first_letter_path(paths_by_length);
+    println!("Part3: {:?}", r3);
 }
 
-#[allow(dead_code)]
-fn print(grid: &Vec<VecDeque<usize>>) {
-    let max_col = grid.iter().map(|col| col.len()).max().unwrap();
-    for y in 0..max_col {
-        for x in 0..grid.len() {
-            if y < grid[x].len() {
-                print!("{:>3} ", grid[x][y]);
-            } else {
-                print!("    ");
-            }
+fn first_letter_path(paths_by_length: HashMap<usize, Vec<VecDeque<String>>>) -> String {
+    paths_by_length
+        .values()
+        .find(|v| v.len() == 1)
+        .unwrap()
+        .first()
+        .unwrap()
+        .iter()
+        .map(|s| s[..1].to_string())
+        .join("")
+}
+
+fn parse_input(input: String) -> HashMap<usize, Vec<VecDeque<String>>> {
+    let (leaf_parents, parent_by_child) =
+        input
+            .trim()
+            .lines()
+            .fold((Vec::new(), HashMap::new()), |(mut leaf_parents, mut parent_by_child), l| {
+                let (parent_id, r) = l.split_once(':').unwrap();
+                if parent_id != "ANT" && parent_id != "BUG" {
+                    r.split(",").filter(|s| *s != "ANT" && *s != "BUG").for_each(|c| {
+                        if c == "@" {
+                            leaf_parents.push(parent_id.to_string());
+                        } else {
+                            parent_by_child.insert(c.to_string(), parent_id.to_string());
+                        }
+                    });
+                }
+                (leaf_parents, parent_by_child)
+            });
+
+    leaf_parents.iter().fold(HashMap::new(), |mut acc, n| {
+        let mut path: VecDeque<String> = [n.clone(), "@".to_string()].try_into().unwrap();
+        let mut cur_id = n.clone();
+        while let Some(parent_id) = parent_by_child.get(&cur_id) {
+            path.push_front(parent_id.clone());
+            cur_id = parent_id.to_string();
         }
-        println!();
-    }
+        acc.entry(path.len()).or_insert(Vec::new()).push(path);
+        acc
+    })
 }
