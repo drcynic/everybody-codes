@@ -1,7 +1,3 @@
-use itertools::Itertools;
-use memoize::memoize;
-use std::collections::{BTreeSet, HashSet, hash_set::IntoIter};
-
 fn main() {
     //p1
     let input = std::fs::read_to_string("everybody_codes_e2025_q11_p1.txt").unwrap();
@@ -25,25 +21,18 @@ fn main() {
         round += 1;
     }
     round += 1;
-    loop {
-        move_down(&mut flocks);
-        let f = flocks.first().unwrap();
-        if flocks.iter().all(|e| e == f) {
-            break;
-        }
-        round += 1;
-    }
+    round += count_move_down(&flocks);
     println!("p2: {}", round);
 
     // p3 - input is only ascending, find target and sum differences of flocks above target to target
     let input = std::fs::read_to_string("everybody_codes_e2025_q11_p3.txt").unwrap();
-    let flocks = input.trim().lines().map(|l| l.parse::<i64>().unwrap()).collect::<Vec<_>>();
-    // flocks.sort();
-    // println!("flocks: {:?}", flocks);
-    let all = flocks.iter().sum::<i64>();
-    let target = all / flocks.len() as i64;
-    let s = flocks.iter().filter(|e| *e > &target).map(|e| e - target).sum::<i64>();
-    println!("p3: {}", s);
+    let flocks = input.trim().lines().map(|l| l.parse::<usize>().unwrap()).collect::<Vec<_>>();
+    println!("p3: {}", count_move_down(&flocks));
+}
+
+fn count_move_down(flocks: &[usize]) -> usize {
+    let target = flocks.iter().sum::<usize>() / flocks.len();
+    flocks.iter().filter(|e| *e > &target).map(|e| e - target).sum::<usize>()
 }
 
 fn move_down(flocks: &mut Vec<usize>) -> bool {
